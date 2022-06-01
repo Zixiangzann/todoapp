@@ -2,6 +2,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Checkbox from '@mui/material/Checkbox';
+import Button from '@mui/material/Button'
 import { blueGrey, lightBlue } from '@mui/material/colors';
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
@@ -15,12 +16,17 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
 import { createTheme, styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useState } from 'react';
+import undoable from 'redux-undo'
+import { ActionCreators as UndoActionCreators } from 'redux-undo'
+import { connect } from 'react-redux'
 
 const theme = createTheme({
   status: {
@@ -112,15 +118,15 @@ export const addItemReducer = itemSlice.reducer;
 
 export const store = configureStore({
   reducer: {
-    addItem: addItemReducer
+    // addItem: addItemReducer
+    addItem: undoable(addItemReducer)
   }
 })
-
 
 // SUBSCRIBE
 const CompletedItem = () => {
   const dispatch = useDispatch();
-  const completedItems = useSelector((state) => state.addItem.item).filter((item) => item.completed === true);
+  const completedItems = useSelector((state) => state.addItem.present.item).filter((item) => item.completed === true)
 
   return (
     <Item sx={{ paddingTop: "4px", minHeight: "600px", maxHeight: "800px", minWidth: "320px", maxWidth: "350px", overflow: "auto", whiteSpace: "nowrap" }}>
@@ -181,7 +187,8 @@ const CompletedItem = () => {
                       inputProps={{ 'aria-labelledby': labelId }}
                     />
                   </ListItemIcon>
-                  <ListItemText id={labelId} primary={item.label} sx={{ textDecoration: "line-through" }} />
+                  {/* <ListItemText id={labelId} primary={item.label} sx={{ textDecoration: "line-through"  }} /> */}
+                  <Typography id={labelId} whiteSpace="normal" sx={{ wordWrap: 'break-word', width: '11rem', textDecoration: "line-through" }}>{item.label}</Typography>
                 </ListItemButton>
               </ListItem>
             );
@@ -194,7 +201,7 @@ const CompletedItem = () => {
 
 const ToDoItem = () => {
   const dispatch = useDispatch();
-  const todoItems = useSelector((state) => state.addItem.item).filter((item) => item.completed === false);
+  const todoItems = useSelector((state) => state.addItem.present.item).filter((item) => item.completed === false)
   return (
 
     <Item sx={{ paddingTop: "4px", minHeight: "600px", maxHeight: "800px", minWidth: "320px", maxWidth: "350px", overflow: "auto", whiteSpace: "nowrap" }}>
@@ -254,7 +261,8 @@ const ToDoItem = () => {
                       inputProps={{ 'aria-labelledby': labelId }}
                     />
                   </ListItemIcon>
-                  <ListItemText id={labelId} primary={item.label} />
+                  {/* <ListItemText id={labelId} primary={item.label}/> */}
+                  <Typography id={labelId} whiteSpace="normal" sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
                 </ListItemButton>
               </ListItem>
             );
@@ -283,11 +291,11 @@ const AddItem = () => {
 
         <FormControl size="small" variant="standard">
 
-          {textLength >= 22 ? <InputLabel error htmlFor="add-task">Max length: 22</InputLabel> :
+          {textLength >= 50 ? <InputLabel error htmlFor="add-task">Max length: 50</InputLabel> :
             <InputLabel htmlFor="add-task">Add Task</InputLabel>
           }
 
-          <Input inputProps={{ maxLength: 22 }} id="add-task"
+          <Input inputProps={{ maxLength: 50 }} id="add-task"
             inputRef={textInput}
             onChange={(e) => {
               setInputValue(e.target.value);
@@ -334,6 +342,45 @@ const AddItem = () => {
   )
 }
 
+let UndoRedo = ({ canUndo, canRedo, onUndo, onRedo }) => (
+  <>
+
+    <Button variant="outlined" startIcon={<UndoIcon />}
+      onClick={onUndo} disabled={!canUndo}
+    >
+      Undo
+    </Button>
+
+    <Button variant="outlined" startIcon={<RedoIcon />}
+      onClick={onRedo} disabled={!canRedo}>
+      Redo
+    </Button>
+  </>
+
+)
+
+const mapStateToProps = state => {
+  return {
+    canUndo: state.addItem.past.length > 0,
+    canRedo: state.addItem.future.length > 0
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onUndo: () => {
+      dispatch(UndoActionCreators.undo())
+      dispatch(storeLocalStorage());
+    },
+    onRedo: () => {
+      dispatch(UndoActionCreators.redo())
+      dispatch(storeLocalStorage());
+    }
+  }
+}
+
+UndoRedo = connect(mapStateToProps, mapDispatchToProps)(UndoRedo)
+
 const App = () => {
 
 
@@ -375,6 +422,8 @@ const App = () => {
           <ToDoItem />
           <CompletedItem />
         </Stack>
+
+        <UndoRedo />
 
       </div>
     </Container>
