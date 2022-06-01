@@ -3,19 +3,9 @@
   "name": "Project 6- To do app with React,Redux and MUI",
   "icons": [
     {
-      "src": "piggylogo_hFc_icon.ico",
-      "sizes": "128x128 64x64 32x32 24x24 16x16",
+      "src": "piggylogo_android.ico",
+      "sizes": "512x512",
       "type": "image/x-icon"
-    },
-    {
-      "src": "piggylogo_hFc_icon.ico",
-      "type": "image/x-icon",
-      "sizes": "128x128"
-    },
-    {
-      "src": "piggylogo_hFc_icon.ico",
-      "type": "image/x-icon",
-      "sizes": "128x128"
     }
   ],
   "start_url": ".",
