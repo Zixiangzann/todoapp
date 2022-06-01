@@ -19,7 +19,7 @@ import { createTheme, styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { configureStore, createSlice } from '@reduxjs/toolkit'
-import { useSelector, useDispatch, Provider } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import React, { useState } from 'react';
 
 const theme = createTheme({
@@ -72,18 +72,18 @@ const itemSlice = createSlice({
           ]
       }
     },
-    storeLocalStorage: (state, action) => {
+    storeLocalStorage: (state) => {
       window.localStorage.setItem("item", JSON.stringify(state.item))
     },
-    removeItem: (state, action) => {
+    removeItem: (state) => {
       state.item = [
         ...state.item
       ].filter((item) => item.id !== action.payload)
     },
-    removeAll: (state, action) => {
+    removeAll: (state) => {
       state.item = []
     },
-    removeToDo: (state, action) => {
+    removeToDo: (state) => {
       state.item = [
         ...state.item
       ].filter((item) => item.completed === true);
