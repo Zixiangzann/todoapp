@@ -75,7 +75,7 @@ const itemSlice = createSlice({
     storeLocalStorage: (state) => {
       window.localStorage.setItem("item", JSON.stringify(state.item))
     },
-    removeItem: (state) => {
+    removeItem: (state, action) => {
       state.item = [
         ...state.item
       ].filter((item) => item.id !== action.payload)
