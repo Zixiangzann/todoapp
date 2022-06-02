@@ -14,6 +14,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -23,10 +24,16 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
-import React, { useState } from 'react';
+import React, { useState, Component } from 'react';
 import undoable from 'redux-undo'
 import { ActionCreators as UndoActionCreators } from 'redux-undo'
 import { connect } from 'react-redux'
+import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const theme = createTheme({
   status: {
@@ -72,7 +79,11 @@ const itemSlice = createSlice({
               id: Date.now() + Math.random(),
               label: action.payload,
               completed: false,
-              lastUpdateDate: Date.now()
+              lastUpdateDate: Date.now(),
+              notes: "",
+              dueDate: null,
+              priority: "",
+              showInput: false,
               // [...state.item, action.payload]  
             }
           ]
@@ -107,13 +118,56 @@ const itemSlice = createSlice({
         }
       });
       state.item = [...state.item]
+    },
+    changeTextField: (state, action) => {
+      state.item.map((item) => {
+        if (item.id === action.payload.id) {
+          item.notes = action.payload.notes
+        }
+      })
+      state.item = [
+        ...state.item
+      ]
+    },
+    changePriority: (state, action) => {
+      state.item.map((item) => {
+        if (item.id === action.payload.id) {
+          item.priority = action.payload.priority
+        }
+      })
+      state.item = [
+        ...state.item
+      ]
+    },
+    changeDueDate: (state, action) => {
+      state.item.map((item) => {
+        if (item.id === action.payload.id) {
+          item.dueDate = action.payload.dueDate
+        }
+      })
+      state.item = [
+        ...state.item
+      ]
+    },
+    showAdditonalInput: (state, action) => {
+      state.item.map((item) => {
+        if (item.id === action.payload) {
+          item.showInput = !item.showInput
+        } else {
+          //to only show 1 additonal input at 1 time. finding a better way to implement this whole function... 
+          item.showInput = false
+        }
+      })
+      state.item = [
+        ...state.item
+      ]
     }
   }
 }
 )
 
 
-export const { addItem, storeLocalStorage, removeItem, removeAll, changeCompletionStatus, removeToDo, removeCompleted } = itemSlice.actions;
+export const { addItem, storeLocalStorage, removeItem, removeAll, changeCompletionStatus, removeToDo, removeCompleted, changeTextField, changePriority, changeDueDate, showAdditonalInput } = itemSlice.actions;
 export const addItemReducer = itemSlice.reducer;
 
 export const store = configureStore({
@@ -170,14 +224,18 @@ const CompletedItem = () => {
                   </Tooltip>
 
                 }
+                sx={{ flexWrap: "wrap" }}
                 disablePadding
               >
-                <ListItemButton onClick={
-                  () => {
-                    dispatch(changeCompletionStatus(item.id));
-                    dispatch(storeLocalStorage())
-                  }
+                <ListItemButton onClick={(e) => {
+                  // dispatch(changeCompletionStatus(item.id));
+                  // dispatch(storeLocalStorage())
+                  // setShowAdditonalInput(s => !s)
+                  dispatch(showAdditonalInput(item.id))
+                  dispatch(storeLocalStorage())
+                }
                 } dense>
+
                   <ListItemIcon>
                     <Checkbox
                       edge="start"
@@ -185,11 +243,101 @@ const CompletedItem = () => {
                       tabIndex={-1}
                       disableRipple
                       inputProps={{ 'aria-labelledby': labelId }}
+                      onClick={() => {
+                        dispatch(changeCompletionStatus(item.id));
+                        dispatch(storeLocalStorage())
+                      }}
                     />
                   </ListItemIcon>
-                  {/* <ListItemText id={labelId} primary={item.label} sx={{ textDecoration: "line-through"  }} /> */}
-                  <Typography id={labelId} whiteSpace="normal" sx={{ wordWrap: 'break-word', width: '11rem', textDecoration: "line-through" }}>{item.label}</Typography>
+                  {/* <ListItemText id={labelId} primary={item.label}/> */}
+                  <Typography id={labelId} whiteSpace="normal" sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
                 </ListItemButton>
+                {item.showInput === true ?
+                  <Box sx={{ backgroundColor: 'whitesmoke', width: "inherit" }}>
+
+                    <TextField
+                      id="standard-multiline-flexible"
+                      label="Notes"
+                      multiline
+                      minRows={4}
+                      maxRows={8}
+                      value={item.notes}
+                      sx={{ width: "inherit" }}
+                      onChange={(e) => {
+                        dispatch(changeTextField({
+                          id: item.id,
+                          notes: e.target.value
+                        }))
+                        dispatch(storeLocalStorage())
+                      }
+                      }
+                    />
+
+
+                    <Box sx={{ paddingTop: "1rem" }}>
+                      <Typography id="duedate">Due Date</Typography>
+                      <Button variant="text" onClick={(e) => {
+                        dispatch(changeDueDate({
+                          id: item.id,
+                          dueDate: Date.now()
+                        }))
+                        dispatch(storeLocalStorage())
+                      }
+                      }
+                      >Today</Button>
+                      <Button variant="text" onClick={(e) => {
+                        const date = new Date();
+                        let tomorrow = date.setDate(date.getDate() + 1);
+                        dispatch(changeDueDate({
+                          id: item.id,
+                          dueDate: tomorrow
+                        }))
+                        dispatch(storeLocalStorage())
+                      }
+                      }>Tomorrow</Button>
+                    </Box>
+
+                    <Box sx={{ paddingTop: "0.3rem" }}>
+                      <LocalizationProvider dateAdapter={AdapterMoment}>
+                        <DatePicker
+                          // label="datepicker"
+                          value={item.dueDate}
+                          onChange={(e) => {
+                            dispatch(changeDueDate({
+                              id: item.id,
+                              dueDate: e.format('DD/MM/YYYY')
+                            }))
+                            dispatch(storeLocalStorage())
+                          }}
+                          renderInput={(params) => <TextField {...params} />}
+                        />
+                      </LocalizationProvider>
+                    </Box>
+
+                    <Box sx={{ paddingTop: "1rem" }}>
+                      <InputLabel id="priority-select-label" sx={{ paddingTop: "0rem" }}>Priority</InputLabel>
+                      <Select
+                        labelId="priority-select"
+                        id="priority-select"
+                        sx={{ width: "50%" }}
+                        value={item.priority}
+                        label="Priority"
+                        onChange={(e) => {
+                          dispatch(changePriority({
+                            id: item.id,
+                            priority: e.target.value
+                          }))
+                          dispatch(storeLocalStorage())
+                        }}
+                      >
+                        <MenuItem value={3}>High</MenuItem>
+                        <MenuItem value={2}>Medium</MenuItem>
+                        <MenuItem value={1}>Low</MenuItem>
+                        <MenuItem value={0}>None</MenuItem>
+                      </Select>
+                    </Box>
+                  </Box>
+                  : null}
               </ListItem>
             );
           })}
@@ -199,9 +347,12 @@ const CompletedItem = () => {
   )
 }
 
+
 const ToDoItem = () => {
   const dispatch = useDispatch();
   const todoItems = useSelector((state) => state.addItem.present.item).filter((item) => item.completed === false)
+  // const [showAdditonalInput, setShowAdditonalInput] = useState(true);
+
   return (
 
     <Item sx={{ paddingTop: "4px", minHeight: "600px", maxHeight: "800px", minWidth: "320px", maxWidth: "350px", overflow: "auto", whiteSpace: "nowrap" }}>
@@ -245,13 +396,18 @@ const ToDoItem = () => {
                   </Tooltip>
 
                 }
+                sx={{ flexWrap: "wrap" }}
                 disablePadding
               >
-                <ListItemButton onClick={() => {
-                  dispatch(changeCompletionStatus(item.id));
+                <ListItemButton onClick={(e) => {
+                  // dispatch(changeCompletionStatus(item.id));
+                  // dispatch(storeLocalStorage())
+                  // setShowAdditonalInput(s => !s)
+                  dispatch(showAdditonalInput(item.id))
                   dispatch(storeLocalStorage())
                 }
                 } dense>
+
                   <ListItemIcon>
                     <Checkbox
                       edge="start"
@@ -259,11 +415,101 @@ const ToDoItem = () => {
                       tabIndex={-1}
                       disableRipple
                       inputProps={{ 'aria-labelledby': labelId }}
+                      onClick={() => {
+                        dispatch(changeCompletionStatus(item.id));
+                        dispatch(storeLocalStorage())
+                      }}
                     />
                   </ListItemIcon>
                   {/* <ListItemText id={labelId} primary={item.label}/> */}
                   <Typography id={labelId} whiteSpace="normal" sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
                 </ListItemButton>
+                {item.showInput === true ?
+                  <Box sx={{ backgroundColor: 'whitesmoke', width: "inherit" }}>
+
+                    <TextField
+                      id="standard-multiline-flexible"
+                      label="Notes"
+                      multiline
+                      minRows={4}
+                      maxRows={8}
+                      value={item.notes}
+                      sx={{ width: "inherit" }}
+                      onChange={(e) => {
+                        dispatch(changeTextField({
+                          id: item.id,
+                          notes: e.target.value
+                        }))
+                        dispatch(storeLocalStorage())
+                      }
+                      }
+                    />
+
+
+                    <Box sx={{ paddingTop: "1rem" }}>
+                      <Typography id="duedate">Due Date</Typography>
+                      <Button variant="text" onClick={(e) => {
+                        dispatch(changeDueDate({
+                          id: item.id,
+                          dueDate: Date.now()
+                        }))
+                        dispatch(storeLocalStorage())
+                      }
+                      }
+                      >Today</Button>
+                      <Button variant="text" onClick={(e) => {
+                        const date = new Date();
+                        let tomorrow = date.setDate(date.getDate() + 1);
+                        dispatch(changeDueDate({
+                          id: item.id,
+                          dueDate: tomorrow
+                        }))
+                        dispatch(storeLocalStorage())
+                      }
+                      }>Tomorrow</Button>
+                    </Box>
+
+                    <Box sx={{ paddingTop: "0.3rem" }}>
+                      <LocalizationProvider dateAdapter={AdapterMoment}>
+                        <DatePicker
+                          // label="datepicker"
+                          value={item.dueDate}
+                          onChange={(e) => {
+                            dispatch(changeDueDate({
+                              id: item.id,
+                              dueDate: e.format('DD/MM/YYYY')
+                            }))
+                            dispatch(storeLocalStorage())
+                          }}
+                          renderInput={(params) => <TextField {...params} />}
+                        />
+                      </LocalizationProvider>
+                    </Box>
+
+                    <Box sx={{ paddingTop: "1rem" }}>
+                      <InputLabel id="priority-select-label" sx={{ paddingTop: "0rem" }}>Priority</InputLabel>
+                      <Select
+                        labelId="priority-select"
+                        id="priority-select"
+                        sx={{ width: "50%" }}
+                        value={item.priority}
+                        label="Priority"
+                        onChange={(e) => {
+                          dispatch(changePriority({
+                            id: item.id,
+                            priority: e.target.value
+                          }))
+                          dispatch(storeLocalStorage())
+                        }}
+                      >
+                        <MenuItem value={3}>High</MenuItem>
+                        <MenuItem value={2}>Medium</MenuItem>
+                        <MenuItem value={1}>Low</MenuItem>
+                        <MenuItem value={0}>None</MenuItem>
+                      </Select>
+                    </Box>
+                  </Box>
+                  : null}
               </ListItem>
             );
           })}
@@ -343,11 +589,10 @@ const AddItem = () => {
 }
 
 let UndoRedo = ({ canUndo, canRedo, onUndo, onRedo }) => (
+  <Box sx={{paddingTop:"0.5rem"}}>
   <>
-
     <Button variant="outlined" startIcon={<UndoIcon />}
-      onClick={onUndo} disabled={!canUndo}
-    >
+      onClick={onUndo} disabled={!canUndo}>
       Undo
     </Button>
 
@@ -356,6 +601,7 @@ let UndoRedo = ({ canUndo, canRedo, onUndo, onRedo }) => (
       Redo
     </Button>
   </>
+  </Box>
 
 )
 
@@ -383,11 +629,9 @@ UndoRedo = connect(mapStateToProps, mapDispatchToProps)(UndoRedo)
 
 const App = () => {
 
-
   return (
     <Container maxWidth="md" sx={{ backgroundColor: "grey", border: "3px solid lightblue", borderRadius: "12px" }}>
       <div className="App">
-
         <Stack
           direction="column"
           spacing={3}
