@@ -305,10 +305,10 @@ const CompletedItem = () => {
                           onChange={(e) => {
                             dispatch(changeDueDate({
                               id: item.id,
-                              dueDate: e
+                              dueDate: e.valueOf()
                             }))
                             dispatch(storeLocalStorage())
-                            console.log(e)
+                            console.log(e.valueOf())
                           }}
                           renderInput={(params) => <TextField {...params} />}
                         />
