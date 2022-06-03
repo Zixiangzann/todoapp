@@ -3,7 +3,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button'
-import { blueGrey, lightBlue } from '@mui/material/colors';
+import { blueGrey, lightBlue, red } from '@mui/material/colors';
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
@@ -178,6 +178,21 @@ export const store = configureStore({
   }
 })
 
+function priorityBorder(id) {
+  switch (id) {
+    case 3:
+      return '3px solid red';
+    case 2:
+      return '3px solid orange';
+    case 1:
+      return '3px solid lightblue';
+    case 0:
+      return '3px solid white';
+    default:
+      break;
+  }
+}
+
 // SUBSCRIBE
 const CompletedItem = () => {
   const dispatch = useDispatch();
@@ -205,29 +220,32 @@ const CompletedItem = () => {
 
           {completedItems.sort((a, b) => (a.lastUpdateDate) - (b.lastUpdateDate)).map((item) => {
             const labelId = `checkbox-list-label-${item.id}`;
+            let borderBottom = priorityBorder(item.priority)
+
             return (
               <ListItem
                 key={item.id}
                 secondaryAction={
-
-                  <Tooltip title="Delete Task">
-                    <IconButton
-                      edge="end"
-                      alt=">Delete Task"
-                      onClick={() => {
-                        dispatch(removeItem(item.id))
-                        dispatch(storeLocalStorage())
-                      }}
-                      sx={{ marginLeft: "5px", color: "lightcoral" }}
-                    >
-                      <CancelIcon sx={{ fontSize: "2rem" }} />
-                    </IconButton>
-                  </Tooltip>
-
+                  item.showInput === false ?
+                    <Tooltip title="Delete Task">
+                      <IconButton
+                        edge="end"
+                        alt=">Delete Task"
+                        onClick={() => {
+                          dispatch(removeItem(item.id))
+                          dispatch(storeLocalStorage())
+                        }}
+                        sx={{ marginLeft: "5px", color: "lightcoral" }}
+                      >
+                        <CancelIcon sx={{ fontSize: "2rem" }} />
+                      </IconButton>
+                    </Tooltip>
+                    : null
                 }
                 sx={{ flexWrap: "wrap" }}
                 disablePadding
               >
+
                 <ListItemButton dense>
 
                   <ListItemIcon>
@@ -243,13 +261,13 @@ const CompletedItem = () => {
                       }}
                     />
                   </ListItemIcon>
-                  {/* <ListItemText id={labelId} primary={item.label}/> */}
+
                   <Typography id={labelId} whiteSpace="normal"
                     onClick={() => {
                       dispatch(showAdditonalInput(item.id))
                       dispatch(storeLocalStorage())
                     }}
-                    sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
+                    sx={{ wordWrap: 'break-word',textDecoration:"line-through" ,width: '11rem', borderBottom }}>{item.label}</Typography>
                 </ListItemButton>
                 {item.showInput === true ?
                   <Box sx={{ backgroundColor: 'whitesmoke', width: "inherit" }}>
@@ -328,6 +346,7 @@ const CompletedItem = () => {
                             priority: e.target.value
                           }))
                           dispatch(storeLocalStorage())
+
                         }}
                       >
                         <MenuItem value={3}>High</MenuItem>
@@ -375,25 +394,27 @@ const ToDoItem = () => {
         <List sx={{ width: '100%', maxWidth: 360 }}>
           {todoItems.sort((a, b) => (a.lastUpdateDate) - (b.lastUpdateDate)).map((item) => {
             const labelId = `checkbox-list-label-${item.id}`;
+            let borderBottom = priorityBorder(item.priority)
             return (
               <ListItem
                 key={item.id}
                 secondaryAction={
+                  item.showInput === false ?
+                    <Tooltip title="Delete Task">
+                      <IconButton
+                        edge="end"
+                        alt=">Delete Task"
+                        onClick={() => {
+                          dispatch(removeItem(item.id))
+                          dispatch(storeLocalStorage())
 
-                  <Tooltip title="Delete Task">
-                    <IconButton
-                      edge="end"
-                      alt=">Delete Task"
-                      onClick={() => {
-                        dispatch(removeItem(item.id))
-                        dispatch(storeLocalStorage())
-
-                      }}
-                      sx={{ marginLeft: "5px", color: "lightcoral" }}
-                    >
-                      <CancelIcon sx={{ fontSize: "2rem" }} />
-                    </IconButton>
-                  </Tooltip>
+                        }}
+                        sx={{ marginLeft: "5px", color: "lightcoral" }}
+                      >
+                        <CancelIcon sx={{ fontSize: "2rem" }} />
+                      </IconButton>
+                    </Tooltip>
+                    : null
 
                 }
                 sx={{ flexWrap: "wrap" }}
@@ -421,7 +442,7 @@ const ToDoItem = () => {
                       dispatch(showAdditonalInput(item.id))
                       dispatch(storeLocalStorage())
                     }}
-                    sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
+                    sx={{ wordWrap: 'break-word', width: '11rem', borderBottom }}>{item.label}</Typography>
                 </ListItemButton>
                 {item.showInput === true ?
                   <Box sx={{ backgroundColor: 'whitesmoke', width: "inherit" }}>
