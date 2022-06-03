@@ -13,6 +13,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import NotesIcon from '@mui/icons-material/Notes';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
@@ -183,7 +184,7 @@ const CompletedItem = () => {
   const completedItems = useSelector((state) => state.addItem.present.item).filter((item) => item.completed === true)
 
   return (
-    <Item sx={{ paddingTop: "4px", minHeight: "600px", maxHeight: "800px", minWidth: "320px", maxWidth: "350px", overflow: "auto", whiteSpace: "nowrap" }}>
+    <Item sx={{ paddingTop: "4px", minHeight: "600px", maxHeight: "800px", width: "350px", overflow: "auto", whiteSpace: "nowrap" }}>
       <div className="Completed">
         <Typography variant="h4" fontFamily="Apple Color Emoji" color={lightBlue[50]} backgroundColor={blueGrey[400]}>Completed
           <Tooltip title="Remove Completed">
@@ -227,14 +228,7 @@ const CompletedItem = () => {
                 sx={{ flexWrap: "wrap" }}
                 disablePadding
               >
-                <ListItemButton onClick={(e) => {
-                  // dispatch(changeCompletionStatus(item.id));
-                  // dispatch(storeLocalStorage())
-                  // setShowAdditonalInput(s => !s)
-                  dispatch(showAdditonalInput(item.id))
-                  dispatch(storeLocalStorage())
-                }
-                } dense>
+                <ListItemButton dense>
 
                   <ListItemIcon>
                     <Checkbox
@@ -250,7 +244,12 @@ const CompletedItem = () => {
                     />
                   </ListItemIcon>
                   {/* <ListItemText id={labelId} primary={item.label}/> */}
-                  <Typography id={labelId} whiteSpace="normal" sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
+                  <Typography id={labelId} whiteSpace="normal"
+                    onClick={() => {
+                      dispatch(showAdditonalInput(item.id))
+                      dispatch(storeLocalStorage())
+                    }}
+                    sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
                 </ListItemButton>
                 {item.showInput === true ?
                   <Box sx={{ backgroundColor: 'whitesmoke', width: "inherit" }}>
@@ -356,7 +355,7 @@ const ToDoItem = () => {
 
   return (
 
-    <Item sx={{ paddingTop: "4px", minHeight: "600px", maxHeight: "800px", minWidth: "320px", maxWidth: "350px", overflow: "auto", whiteSpace: "nowrap" }}>
+    <Item sx={{ paddingTop: "4px", minHeight: "600px", maxHeight: "800px", width: "350px", overflow: "auto", whiteSpace: "nowrap" }}>
       <div className="ToDo">
         <Typography variant="h4" fontFamily="Apple Color Emoji" color={lightBlue[50]} backgroundColor={blueGrey[400]}>TO DO
           <Tooltip title="Remove TO DO">
@@ -400,14 +399,7 @@ const ToDoItem = () => {
                 sx={{ flexWrap: "wrap" }}
                 disablePadding
               >
-                <ListItemButton onClick={(e) => {
-                  // dispatch(changeCompletionStatus(item.id));
-                  // dispatch(storeLocalStorage())
-                  // setShowAdditonalInput(s => !s)
-                  dispatch(showAdditonalInput(item.id))
-                  dispatch(storeLocalStorage())
-                }
-                } dense>
+                <ListItemButton dense>
 
                   <ListItemIcon>
                     <Checkbox
@@ -421,9 +413,15 @@ const ToDoItem = () => {
                         dispatch(storeLocalStorage())
                       }}
                     />
+
                   </ListItemIcon>
-                  {/* <ListItemText id={labelId} primary={item.label}/> */}
-                  <Typography id={labelId} whiteSpace="normal" sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
+
+                  <Typography id={labelId} whiteSpace="normal"
+                    onClick={() => {
+                      dispatch(showAdditonalInput(item.id))
+                      dispatch(storeLocalStorage())
+                    }}
+                    sx={{ wordWrap: 'break-word', width: '11rem' }}>{item.label}</Typography>
                 </ListItemButton>
                 {item.showInput === true ?
                   <Box sx={{ backgroundColor: 'whitesmoke', width: "inherit" }}>
@@ -591,18 +589,18 @@ const AddItem = () => {
 }
 
 let UndoRedo = ({ canUndo, canRedo, onUndo, onRedo }) => (
-  <Box sx={{paddingTop:"0.5rem"}}>
-  <>
-    <Button variant="outlined" startIcon={<UndoIcon />}
-      onClick={onUndo} disabled={!canUndo}>
-      Undo
-    </Button>
+  <Box sx={{ paddingTop: "0.5rem" }}>
+    <>
+      <Button variant="outlined" startIcon={<UndoIcon />}
+        onClick={onUndo} disabled={!canUndo}>
+        Undo
+      </Button>
 
-    <Button variant="outlined" startIcon={<RedoIcon />}
-      onClick={onRedo} disabled={!canRedo}>
-      Redo
-    </Button>
-  </>
+      <Button variant="outlined" startIcon={<RedoIcon />}
+        onClick={onRedo} disabled={!canRedo}>
+        Redo
+      </Button>
+    </>
   </Box>
 
 )
