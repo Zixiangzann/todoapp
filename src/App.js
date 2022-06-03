@@ -305,9 +305,10 @@ const CompletedItem = () => {
                           onChange={(e) => {
                             dispatch(changeDueDate({
                               id: item.id,
-                              dueDate: e.format('DD/MM/YYYY')
+                              dueDate: e
                             }))
                             dispatch(storeLocalStorage())
+                            console.log(e)
                           }}
                           renderInput={(params) => <TextField {...params} />}
                         />
@@ -477,9 +478,10 @@ const ToDoItem = () => {
                           onChange={(e) => {
                             dispatch(changeDueDate({
                               id: item.id,
-                              dueDate: e.format('DD/MM/YYYY')
+                              dueDate: e.valueOf()
                             }))
                             dispatch(storeLocalStorage())
+                            console.log(e.valueOf())
                           }}
                           renderInput={(params) => <TextField {...params} />}
                         />
